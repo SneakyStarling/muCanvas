@@ -16,11 +16,12 @@ jobs:
       - name: Build with Docker
         uses: addnab/docker-run-action@v3
         with:
-          image: debian:buster  # Use buster for SDL1.2 support
+          image: debian:buster
           options: |
             --platform linux/arm
             -v ${{ github.workspace }}:/src
           run: |
+            # Add ARM architecture and install dependencies
             dpkg --add-architecture armhf
             apt-get update
             apt-get install -y \
@@ -28,11 +29,30 @@ jobs:
                 g++-arm-linux-gnueabihf \
                 libsdl1.2-dev:armhf \
                 libsdl-ttf2.0-dev:armhf \
-                pkg-config
+                libasound2-dev:armhf \
+                libx11-dev:armhf \
+                libxext-dev:armhf \
+                libxrender-dev:armhf \
+                libxrandr-dev:armhf \
+                libpulse-dev:armhf \
+                libcaca-dev:armhf \
+                libgl1-mesa-dev:armhf \
+                libdbus-1-dev:armhf
+
+            # Build with explicit library linking
             cd /src
             arm-linux-gnueabihf-gcc main.c -o sdl_app_arm \
                 $(sdl-config --cflags --libs) \
                 -lSDL_ttf \
+                -lasound \
+                -lX11 \
+                -lXext \
+                -lXrender \
+                -lXrandr \
+                -lpulse \
+                -lcaca \
+                -ldbus-1 \
+                -lm \
                 -static
 
       - name: Upload ARM binary
