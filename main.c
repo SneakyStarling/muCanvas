@@ -1,73 +1,32 @@
-#include <SDL/SDL.h>
-#include <SDL/SDL_ttf.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#define SCREEN_W 640
-#define SCREEN_H 480
-#define FONT_PATH "/mnt/mmc/MUOS/application/muCanvas/DejaVuSans.ttf"
-
-void cleanup(TTF_Font *font, SDL_Surface *screen) {
-    if (font) TTF_CloseFont(font);
-    TTF_Quit();
-    SDL_Quit();
-}
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 int main() {
-    SDL_Surface *screen = NULL;
-    TTF_Font *font = NULL;
+    SDL_Init(SDL_INIT_VIDEO);
+    TTF_Init();
 
-//    putenv("SDL_VIDEODRIVER=kmsdrm");  // or "fbdev"
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
-        return 1;
-    }
+    SDL_Window *window = SDL_CreateWindow("SDL2 Text", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, 0);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    screen = SDL_SetVideoMode(SCREEN_W, SCREEN_H, 32, SDL_SWSURFACE);
-    if (!screen) {
-        fprintf(stderr, "SDL_SetVideoMode failed: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
+    TTF_Font *font = TTF_OpenFont("DejaVuSans.ttf", 24);
+    SDL_Color color = {255, 255, 255, 255};
+    SDL_Surface *text_surface = TTF_RenderText_Solid(font, "Hello SDL2!", color);
+    SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
 
-    if (TTF_Init() < 0) {
-        fprintf(stderr, "TTF_Init failed: %s\n", TTF_GetError());
-        SDL_Quit();
-        return 1;
-    }
+    SDL_Rect dstrect = {50, 50, text_surface->w, text_surface->h};
+    SDL_FreeSurface(text_surface);
 
-    font = TTF_OpenFont(FONT_PATH, 24);
-    if (!font) {
-        fprintf(stderr, "TTF_OpenFont failed: %s\n", TTF_GetError());
-        cleanup(NULL, screen);
-        return 1;
-    }
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, text_texture, NULL, &dstrect);
+    SDL_RenderPresent(renderer);
 
-    SDL_Color color = {0, 0, 0};
-    SDL_Surface *text = TTF_RenderText_Solid(font, "Hello SDL1.2!", color);
-    if (!text) {
-        fprintf(stderr, "TTF_RenderText failed\n");
-        cleanup(font, screen);
-        return 1;
-    }
+    SDL_Delay(2000);
 
-    SDL_Event event;
-    Uint32 start = SDL_GetTicks();
-    int running = 1;
-
-    while (running) {
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) running = 0;
-        }
-
-        SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 255, 255, 255));
-        SDL_BlitSurface(text, NULL, screen, NULL);
-        SDL_Flip(screen);
-
-        if (SDL_GetTicks() - start > 2000) running = 0;
-    }
-
-    SDL_FreeSurface(text);
-    cleanup(font, screen);
+    SDL_DestroyTexture(text_texture);
+    TTF_CloseFont(font);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    TTF_Quit();
+    SDL_Quit();
     return 0;
 }
