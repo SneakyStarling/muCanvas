@@ -1,4 +1,4 @@
-name: SDL2 ARM Build
+name: SDL1.2 ARM Build
 
 on: [push]
 
@@ -16,18 +16,24 @@ jobs:
       - name: Build with Docker
         uses: addnab/docker-run-action@v3
         with:
-          image: debian:bookworm
+          image: debian:buster  # Use buster for SDL1.2 support
           options: |
             --platform linux/arm
             -v ${{ github.workspace }}:/src
           run: |
-            apt-get update && apt-get install -y \
+            dpkg --add-architecture armhf
+            apt-get update
+            apt-get install -y \
                 gcc-arm-linux-gnueabihf \
-                libsdl2-dev:armhf \
-                libsdl2-ttf-dev:armhf \
+                g++-arm-linux-gnueabihf \
+                libsdl1.2-dev:armhf \
+                libsdl-ttf2.0-dev:armhf \
                 pkg-config
             cd /src
-            arm-linux-gnueabihf-gcc main.c -o sdl_app_arm $(pkg-config --cflags --libs sdl2 SDL2_ttf)
+            arm-linux-gnueabihf-gcc main.c -o sdl_app_arm \
+                $(sdl-config --cflags --libs) \
+                -lSDL_ttf \
+                -static
 
       - name: Upload ARM binary
         uses: actions/upload-artifact@v4

@@ -1,32 +1,34 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_ttf.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
-#define FONT_PATH "DejaVuSans.ttf"  // Ensure this font exists in your build directory
-#define DISPLAY_DURATION 2000       // 2 seconds
+#define FONT_PATH "DejaVuSans.ttf"
 
-// Helper function to clean up resources
-void cleanup(SDL_Window *w, SDL_Renderer *r, TTF_Font *f, SDL_Texture *t) {
-    if (t) SDL_DestroyTexture(t);
-    if (f) TTF_CloseFont(f);
-    if (r) SDL_DestroyRenderer(r);
-    if (w) SDL_DestroyWindow(w);
+void cleanup(TTF_Font *font, SDL_Surface *screen) {
+    if (font) TTF_CloseFont(font);
     TTF_Quit();
     SDL_Quit();
 }
 
 int main() {
-    SDL_Window *window = NULL;
-    SDL_Renderer *renderer = NULL;
+    SDL_Surface *screen = NULL;
+    SDL_Surface *textSurface = NULL;
     TTF_Font *font = NULL;
-    SDL_Texture *textTexture = NULL;
 
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fprintf(stderr, "SDL initialization failed: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
+    }
+
+    // Set video mode
+    screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 32, SDL_SWSURFACE);
+    if (!screen) {
+        fprintf(stderr, "Failed to set video mode: %s\n", SDL_GetError());
+        SDL_Quit();
         return EXIT_FAILURE;
     }
 
@@ -37,69 +39,29 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    // Create window
-    window = SDL_CreateWindow(
-        "SDL2 Text Example",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        SCREEN_WIDTH, SCREEN_HEIGHT,
-        SDL_WINDOW_SHOWN
-    );
-    if (!window) {
-        fprintf(stderr, "Window creation failed: %s\n", SDL_GetError());
-        cleanup(NULL, NULL, NULL, NULL);
-        return EXIT_FAILURE;
-    }
-
-    // Create renderer
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (!renderer) {
-        fprintf(stderr, "Renderer creation failed: %s\n", SDL_GetError());
-        cleanup(window, NULL, NULL, NULL);
-        return EXIT_FAILURE;
-    }
-
     // Load font
-    font = TTF_OpenFont(FONT_PATH, 48);
+    font = TTF_OpenFont(FONT_PATH, 24);
     if (!font) {
-        fprintf(stderr, "Failed to load font '%s': %s\n", FONT_PATH, TTF_GetError());
-        fprintf(stderr, "Note: On Ubuntu/Debian, install with: sudo apt-get install ttf-dejavu\n");
-        cleanup(window, renderer, NULL, NULL);
+        fprintf(stderr, "Failed to load font: %s\n", TTF_GetError());
+        cleanup(NULL, screen);
         return EXIT_FAILURE;
     }
 
-    // Create text surface
-    SDL_Color textColor = {0, 0, 0, 255}; // Black text
-    SDL_Surface *textSurface = TTF_RenderText_Blended(font, "Hello, SDL2!", textColor);
+    // Render text
+    SDL_Color textColor = {0, 0, 0}; // Black
+    textSurface = TTF_RenderText_Solid(font, "Hello SDL1.2!", textColor);
     if (!textSurface) {
-        fprintf(stderr, "Text surface creation failed: %s\n", TTF_GetError());
-        cleanup(window, renderer, font, NULL);
+        fprintf(stderr, "Failed to render text: %s\n", TTF_GetError());
+        cleanup(font, screen);
         return EXIT_FAILURE;
     }
 
-    // Create texture from surface
-    textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-    SDL_FreeSurface(textSurface);  // Surface no longer needed
-    if (!textTexture) {
-        fprintf(stderr, "Texture creation failed: %s\n", SDL_GetError());
-        cleanup(window, renderer, font, NULL);
-        return EXIT_FAILURE;
-    }
-
-    // Set up text position
-    SDL_Rect textRect = {
-        .x = 50,
-        .y = 50,
-        .w = textSurface->w,
-        .h = textSurface->h
-    };
-
-    // Main rendering loop
-    Uint32 startTime = SDL_GetTicks();
+    // Main loop
     SDL_Event event;
     int running = 1;
+    Uint32 startTime = SDL_GetTicks();
 
     while (running) {
-        // Handle events
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = 0;
@@ -107,26 +69,22 @@ int main() {
         }
 
         // Clear screen
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderClear(renderer);
+        SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 255, 255, 255));
 
-        // Render text
-        if (SDL_RenderCopy(renderer, textTexture, NULL, &textRect) < 0) {
-            fprintf(stderr, "Rendering failed: %s\n", SDL_GetError());
-            cleanup(window, renderer, font, textTexture);
-            return EXIT_FAILURE;
-        }
+        // Blit text
+        SDL_Rect textRect = {50, 50, 0, 0};
+        SDL_BlitSurface(textSurface, NULL, screen, &textRect);
 
         // Update screen
-        SDL_RenderPresent(renderer);
+        SDL_Flip(screen);
 
-        // Check display duration
-        if (SDL_GetTicks() - startTime > DISPLAY_DURATION) {
+        if (SDL_GetTicks() - startTime > 2000) {
             running = 0;
         }
     }
 
-    // Cleanup and exit
-    cleanup(window, renderer, font, textTexture);
+    // Cleanup
+    SDL_FreeSurface(textSurface);
+    cleanup(font, screen);
     return EXIT_SUCCESS;
 }
