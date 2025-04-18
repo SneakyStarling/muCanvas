@@ -6,7 +6,7 @@ int main() {
     TTF_Init();
 
     SDL_Window *window = SDL_CreateWindow("SDL2 Text", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_FULLSCREEN);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     TTF_Font *font = TTF_OpenFont("DejaVuSans.ttf", 24);
     SDL_Color color = {255, 255, 255, 255};
@@ -19,7 +19,7 @@ int main() {
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, text_texture, NULL, &dstrect);
     int i;
-    for (i = 1; i <= 10; i++) {
+    for (i = 1; i <= 50; i++) {
         SDL_RenderPresent(renderer);
     }
 
