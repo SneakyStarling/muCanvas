@@ -25,39 +25,33 @@ jobs:
             dpkg --add-architecture armhf
             apt-get update
 
-            # Install required libraries (static and dynamic)
+            # Install cross-compiler and dependencies
             apt-get install -y \
                 gcc-arm-linux-gnueabihf \
+                g++-arm-linux-gnueabihf \
                 libsdl1.2-dev:armhf \
                 libsdl-ttf2.0-dev:armhf \
                 libasound2-dev:armhf \
-                libpulse-dev:armhf \
                 libx11-dev:armhf \
                 libxext-dev:armhf \
                 libxrender-dev:armhf \
                 libxrandr-dev:armhf \
+                libpulse-dev:armhf \
                 libcaca-dev:armhf \
-                libgl1-mesa-dev:armhf \
-                libdbus-1-dev:armhf \
-                libasound2-dev:armhf-static \
-                libpulse-dev:armhf-static \
-                libx11-dev:armhf-static
+                pkg-config
 
-            # Fix missing symlinks for static libraries
-            ln -s /usr/lib/arm-linux-gnueabihf/libasound.a /usr/lib/arm-linux-gnueabihf/libasound2.a || true
-            ln -s /usr/lib/arm-linux-gnueabihf/libpulse.a /usr/lib/arm-linux-gnueabihf/libpulse-simple.a || true
-
-            # Build with dynamic linking
+            # Fix sdl-config path and build
             cd /src
+            export PATH=$PATH:/usr/bin/arm-linux-gnueabihf
             arm-linux-gnueabihf-gcc main.c -o sdl_app_arm \
                 $(sdl-config --cflags --libs) \
                 -lSDL_ttf \
                 -lasound \
-                -lpulse \
                 -lX11 \
                 -lXext \
                 -lXrender \
                 -lXrandr \
+                -lpulse \
                 -lcaca \
                 -ldbus-1 \
                 -lm
