@@ -4,32 +4,19 @@ on: [push]
 
 jobs:
   build-arm:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm  # Native ARM64 runner!
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev libsdl2-ttf-dev gcc make
 
-      - name: Build with Docker
-        uses: addnab/docker-run-action@v3
-        with:
-          image: debian:bookworm
-          options: |
-            --platform linux/arm
-            -v ${{ github.workspace }}:/src
-          run: |
-            apt-get update
-            apt-get install -y \
-                gcc-arm-linux-gnueabihf \
-                libsdl2-dev:armhf \
-                libsdl2-ttf-dev:armhf
-
-            cd /src
-            arm-linux-gnueabihf-gcc -g main.c -o sdl_app_arm \
-                $(pkg-config --cflags --libs sdl2 SDL2_ttf)
+      - name: Build
+        run: |
+          gcc -g main.c -o sdl_app_arm $(pkg-config --cflags --libs sdl2 SDL2_ttf)
 
       - name: Upload ARM binary
         uses: actions/upload-artifact@v4
