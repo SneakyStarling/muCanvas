@@ -1,4 +1,4 @@
-name: SDL2 ARM Cross-Compile
+name: SDL2 ARM Build
 
 on: [push]
 
@@ -22,26 +22,12 @@ jobs:
             -v ${{ github.workspace }}:/src
           run: |
             apt-get update && apt-get install -y \
-                wget \
-                build-essential \
-                cmake \
-                libfreetype6-dev \
-                libharfbuzz-dev \
-                libgl1-mesa-dev
-
-            # Install SDL2
-            wget https://github.com/libsdl-org/SDL/releases/download/release-2.30.2/SDL2-2.30.2.tar.gz
-            tar xzf SDL2-2.30.2.tar.gz
-            cd SDL2-2.30.2 && ./configure && make -j4 && make install
-
-            # Install SDL2_ttf
-            wget https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-2.20.2.tar.gz
-            tar xzf SDL2_ttf-2.20.2.tar.gz
-            cd SDL2_ttf-2.20.2 && ./configure && make -j4 && make install
-
-            # Build project
+                gcc-arm-linux-gnueabihf \
+                libsdl2-dev:armhf \
+                libsdl2-ttf-dev:armhf \
+                pkg-config
             cd /src
-            gcc main.c -o sdl_app_arm $(pkg-config --cflags --libs sdl2 SDL2_ttf) -static
+            arm-linux-gnueabihf-gcc main.c -o sdl_app_arm $(pkg-config --cflags --libs sdl2 SDL2_ttf)
 
       - name: Upload ARM binary
         uses: actions/upload-artifact@v4
