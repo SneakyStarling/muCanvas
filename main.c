@@ -17,6 +17,7 @@ int main() {
     SDL_Surface *screen = NULL;
     TTF_Font *font = NULL;
 
+    putenv("SDL_VIDEODRIVER=kmsdrm");  // or "fbdev"
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
         return 1;

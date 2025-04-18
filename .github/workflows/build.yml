@@ -25,15 +25,13 @@ jobs:
             dpkg --add-architecture armhf
             apt-get update
 
-            # Install runtime dependencies (dynamic linking)
+            # Install minimal dependencies for KMSDRM/fbdev
             apt-get install -y \
                 gcc-arm-linux-gnueabihf \
                 libsdl1.2-dev:armhf \
                 libsdl-ttf2.0-dev:armhf \
-                libdrm-dev:armhf \
                 libgbm-dev:armhf \
-                libinput-dev:armhf \
-                libx11-dev:armhf
+                libdrm-dev:armhf
 
             # Build with dynamic linking
             cd /src
@@ -42,7 +40,7 @@ jobs:
                 -lSDL_ttf \
                 -ldrm \
                 -lgbm \
-                -lX11
+                -lm
 
       - name: Upload ARM binary
         uses: actions/upload-artifact@v4
