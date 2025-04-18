@@ -13,8 +13,7 @@ int main() {
         640, 480,
         SDL_WINDOW_FULLSCREEN
     );
-//    SDL_Window *window = SDL_CreateWindow("SDL2 Text", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, 0);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 
     TTF_Font *font = TTF_OpenFont("DejaVuSans.ttf", 24);
     SDL_Color color = {255, 255, 255, 255};
