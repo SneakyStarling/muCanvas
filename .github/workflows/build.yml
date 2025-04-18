@@ -7,10 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install cross-compiler and SDL2 dev
+      - name: Add ARM architecture and update
         run: |
+          sudo dpkg --add-architecture armhf
           sudo apt-get update
-          sudo apt-get install -y gcc-arm-linux-gnueabihf pkg-config libsdl2-dev:armhf
+      - name: Install cross-compiler and SDL2 dev for ARM
+        run: |
+          sudo apt-get install -y gcc-arm-linux-gnueabihf libsdl2-dev:armhf
       - name: Build for ARM
         run: |
           arm-linux-gnueabihf-gcc main.c -o sdl2_text_example_arm $(pkg-config --cflags --libs sdl2)
