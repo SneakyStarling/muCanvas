@@ -25,36 +25,28 @@ jobs:
             dpkg --add-architecture armhf
             apt-get update
 
-            # Install cross-compiler and dependencies
+            # Install dependencies with FIXED dbus packages
             apt-get install -y \
                 gcc-arm-linux-gnueabihf \
-                g++-arm-linux-gnueabihf \
                 libsdl1.2-dev:armhf \
                 libsdl-ttf2.0-dev:armhf \
+                libdbus-1-dev:armhf \
+                libdbus-1-3:armhf \
                 libasound2-dev:armhf \
                 libx11-dev:armhf \
                 libxext-dev:armhf \
                 libxrender-dev:armhf \
                 libxrandr-dev:armhf \
-                libpulse-dev:armhf \
-                libcaca-dev:armhf \
-                pkg-config
+                libpulse-dev:armhf
 
-            # Fix sdl-config path and build
+            # Explicitly link dbus-1 library
             cd /src
-            export PATH=$PATH:/usr/bin/arm-linux-gnueabihf
             arm-linux-gnueabihf-gcc main.c -o sdl_app_arm \
                 $(sdl-config --cflags --libs) \
                 -lSDL_ttf \
-                -lasound \
-                -lX11 \
-                -lXext \
-                -lXrender \
-                -lXrandr \
-                -lpulse \
-                -lcaca \
                 -ldbus-1 \
-                -lm
+                -L/usr/lib/arm-linux-gnueabihf \
+                -Wl,-rpath-link=/usr/lib/arm-linux-gnueabihf
 
       - name: Upload ARM binary
         uses: actions/upload-artifact@v4
