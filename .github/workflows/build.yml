@@ -27,10 +27,12 @@ jobs:
                 gcc-arm-linux-gnueabihf \
                 libsdl1.2-dev:armhf \
                 libsdl-ttf2.0-dev:armhf
+
+            # Build with framebuffer driver
             cd /src
             arm-linux-gnueabihf-gcc -g main.c -o sdl_app_arm \
-                $(sdl-config --cflags --libs) \
-                -lSDL_ttf -lm
+                $(sdl-config --cflags) \
+                -lSDL -lSDL_ttf -lm
 
       - name: Upload ARM binary
         uses: actions/upload-artifact@v4
