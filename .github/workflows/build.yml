@@ -1,24 +1,43 @@
-name: Build SDL Project for ARM
+name: Build SDL for ARM
 
-on: [push, pull_request]
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
 
 jobs:
   build-arm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Add ARM architecture and update
-        run: |
-          sudo dpkg --add-architecture armhf
-          sudo apt-get update
-      - name: Install cross-compiler and SDL2 dev for ARM
-        run: |
-          sudo apt-get install -y gcc-arm-linux-gnueabihf libsdl2-dev:armhf
-      - name: Build for ARM
-        run: |
-          arm-linux-gnueabihf-gcc main.c -o sdl2_text_example_arm $(pkg-config --cflags --libs sdl2)
-      - name: Archive ARM build
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build with Docker
+        uses: addnab/docker-run-action@v3
+        with:
+          image: debian:bookworm
+          options: |
+            --platform linux/arm64
+            --volume ${{ github.workspace }}:/src
+          run: |
+            apt-get update && apt-get install -y \
+                gcc-aarch64-linux-gnu \
+                libsdl2-dev:arm64 \
+                pkg-config \
+                make
+
+            cd /src
+            aarch64-linux-gnu-gcc main.c -o sdl_app_arm64 \
+                $(pkg-config --cflags --libs sdl2) \
+                -static
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sdl2_text_example_arm
-          path: sdl2_text_example_arm
+          name: sdl_arm64_binary
+          path: sdl_app_arm64
