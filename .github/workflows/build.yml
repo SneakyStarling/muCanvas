@@ -21,26 +21,16 @@ jobs:
             --platform linux/arm
             -v ${{ github.workspace }}:/src
           run: |
-            # Add ARM architecture and update
             dpkg --add-architecture armhf
             apt-get update
-
-            # Install minimal dependencies for KMSDRM/fbdev
             apt-get install -y \
                 gcc-arm-linux-gnueabihf \
                 libsdl1.2-dev:armhf \
-                libsdl-ttf2.0-dev:armhf \
-                libgbm-dev:armhf \
-                libdrm-dev:armhf
-
-            # Build with dynamic linking
+                libsdl-ttf2.0-dev:armhf
             cd /src
             arm-linux-gnueabihf-gcc -g main.c -o sdl_app_arm \
                 $(sdl-config --cflags --libs) \
-                -lSDL_ttf \
-                -ldrm \
-                -lgbm \
-                -lm
+                -lSDL_ttf -lm
 
       - name: Upload ARM binary
         uses: actions/upload-artifact@v4
