@@ -1,21 +1,21 @@
-name: Build SDL Project
+name: Build SDL Project for ARM
 
 on: [push, pull_request]
 
 jobs:
-  build:
+  build-arm:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: libsdl-org/setup-sdl@main
-        with:
-          install-linux-dependencies: true
-          version: 2-latest
-      - name: Build with gcc
+      - name: Install cross-compiler and SDL2 dev
         run: |
-          gcc main.c -o sdl_bitmap_font_example $(pkg-config --cflags --libs sdl2)
-      - name: Archive build
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-linux-gnueabihf pkg-config libsdl2-dev:armhf
+      - name: Build for ARM
+        run: |
+          arm-linux-gnueabihf-gcc main.c -o sdl2_text_example_arm $(pkg-config --cflags --libs sdl2)
+      - name: Archive ARM build
         uses: actions/upload-artifact@v4
         with:
-          name: sdl_bitmap_font_example
-          path: sdl_bitmap_font_example
+          name: sdl2_text_example_arm
+          path: sdl2_text_example_arm
