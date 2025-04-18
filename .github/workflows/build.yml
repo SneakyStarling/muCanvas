@@ -30,7 +30,7 @@ jobs:
                 libsdl-ttf2.0-dev:armhf
 
             cd /src
-            arm-linux-gnueabihf-gcc -g main.c -o sdl_app_arm $(pkg-config --cflags -lsdl2 -lSDL2_ttf)
+            arm-linux-gnueabihf-gcc -g main.c -o sdl_app_arm $(pkg-config --cflags --libs sdl2 SDL2_ttf)
 
       - name: Upload ARM binary
         uses: actions/upload-artifact@v4
