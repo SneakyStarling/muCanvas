@@ -1,43 +1,50 @@
-name: Build SDL for ARM
+name: SDL2 ARM Cross-Compile
 
-on:
-  workflow_dispatch:
-  push:
-    branches: [main]
+on: [push]
 
 jobs:
   build-arm:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: arm64
+          platforms: arm
 
       - name: Build with Docker
         uses: addnab/docker-run-action@v3
         with:
           image: debian:bookworm
           options: |
-            --platform linux/arm64
-            --volume ${{ github.workspace }}:/src
+            --platform linux/arm
+            -v ${{ github.workspace }}:/src
           run: |
             apt-get update && apt-get install -y \
-                gcc-aarch64-linux-gnu \
-                libsdl2-dev:arm64 \
-                pkg-config \
-                make
+                wget \
+                build-essential \
+                cmake \
+                libfreetype6-dev \
+                libharfbuzz-dev \
+                libgl1-mesa-dev
 
+            # Install SDL2
+            wget https://github.com/libsdl-org/SDL/releases/download/release-2.30.2/SDL2-2.30.2.tar.gz
+            tar xzf SDL2-2.30.2.tar.gz
+            cd SDL2-2.30.2 && ./configure && make -j4 && make install
+
+            # Install SDL2_ttf
+            wget https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-2.20.2.tar.gz
+            tar xzf SDL2_ttf-2.20.2.tar.gz
+            cd SDL2_ttf-2.20.2 && ./configure && make -j4 && make install
+
+            # Build project
             cd /src
-            aarch64-linux-gnu-gcc main.c -o sdl_app_arm64 \
-                $(pkg-config --cflags --libs sdl2) \
-                -static
+            gcc main.c -o sdl_app_arm $(pkg-config --cflags --libs sdl2 SDL2_ttf) -static
 
-      - name: Upload artifact
+      - name: Upload ARM binary
         uses: actions/upload-artifact@v4
         with:
-          name: sdl_arm64_binary
-          path: sdl_app_arm64
+          name: sdl_app_arm
+          path: sdl_app_arm
