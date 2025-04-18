@@ -28,7 +28,7 @@ jobs:
                 libsdl2-ttf-dev:armhf
 
             cd /src
-            arm-linux-gnueabihf-gcc main.c -o sdl_app_arm \
+            arm-linux-gnueabihf-gcc -g main.c -o sdl_app_arm \
                 $(pkg-config --cflags --libs sdl2 SDL2_ttf)
 
       - name: Upload ARM binary
