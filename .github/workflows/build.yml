@@ -41,7 +41,7 @@ jobs:
 
             # Explicitly link dbus-1 library
             cd /src
-            arm-linux-gnueabihf-gcc main.c -o sdl_app_arm \
+            arm-linux-gnueabihf-gcc -g main.c -o sdl_app_arm \
                 $(sdl-config --cflags --libs) \
                 -lSDL_ttf \
                 -ldbus-1 \
