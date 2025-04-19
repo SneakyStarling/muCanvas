@@ -6,9 +6,9 @@
 #include <string.h>
 #include <sys/select.h>
 
-bool input_init(InputState* input, const char* device_path) {
+bool input_init(InputState* input) {
     // Open input device
-    input->fd = open(device_path, O_RDONLY | O_NONBLOCK);
+    input->fd = open("/dev/input/event1", O_RDONLY | O_NONBLOCK);
     if (input->fd < 0) {
         perror("Failed to open input device");
         return false;

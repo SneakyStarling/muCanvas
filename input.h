@@ -42,7 +42,7 @@ typedef struct {
 } InputState;
 
 // Initialization and cleanup
-bool input_init(InputState* input, const char* device_path);
+bool input_init(InputState* input);
 void input_cleanup(InputState* input);
 
 // Update and state tracking
