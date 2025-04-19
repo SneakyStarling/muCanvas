@@ -2,10 +2,11 @@
 #define INPUT_H
 
 #include <stdbool.h>
-#include <stdint.h>
-#include <linux/input.h>
+#include <stdlib.h>
+#include <string.h>
+#include <SDL2/SDL.h>
 
-// Button definitions for Anbernic RG40XX H
+// Button codes from your evtest output
 #define BUTTON_A        304
 #define BUTTON_B        305
 #define BUTTON_Y        306
@@ -22,23 +23,35 @@
 #define BUTTON_VOLUP    114
 #define BUTTON_VOLDOWN  115
 
-// Joystick axes
-#define AXIS_LEFT_Y     0  // ABS_Y
-#define AXIS_LEFT_Z     1  // ABS_Z
-#define AXIS_RIGHT_RY   4  // ABS_RY
-#define AXIS_RIGHT_RZ   5  // ABS_RZ
+// D-pad virtual button codes (above 1000 to avoid conflicts)
+#define BUTTON_DPAD_LEFT  1001
+#define BUTTON_DPAD_RIGHT 1002
+#define BUTTON_DPAD_UP    1003
+#define BUTTON_DPAD_DOWN  1004
 
-#define MAX_BUTTONS 512
-#define JOYSTICK_DEADZONE 4000
+// Axis codes from evtest
+#define AXIS_Y       1  // Left stick Y (ABS_Y)
+#define AXIS_Z       2  // Left stick X (ABS_Z)
+#define AXIS_RY      4  // Right stick Y (ABS_RY)
+#define AXIS_RZ      5  // Right stick Z (ABS_RZ)
+#define AXIS_DPAD_X  16 // D-pad X axis (ABS_HAT0X)
+#define AXIS_DPAD_Y  17 // D-pad Y axis (ABS_HAT0Y)
+
+// Constants
+#define MAX_BUTTONS 2000
+#define JOYSTICK_DEADZONE 4000  // Deadzone for analog sticks
 
 typedef struct {
-    int fd;                          // Input device file descriptor
-    bool current[MAX_BUTTONS];       // Current button states
-    bool previous[MAX_BUTTONS];      // Previous button states
-    int16_t joystick_left_y;         // Left joystick Y axis
-    int16_t joystick_left_z;         // Left joystick Z axis (X equivalent)
-    int16_t joystick_right_y;        // Right joystick Y axis
-    int16_t joystick_right_z;        // Right joystick Z axis (X equivalent)
+    int fd;                        // Input device file descriptor
+    bool current[MAX_BUTTONS];     // Current button states
+    bool previous[MAX_BUTTONS];    // Previous button states
+
+    // Joystick state
+    SDL_Joystick *joystick;        // SDL Joystick handle
+    int16_t left_stick_x;          // Left stick X position (-32768 to 32767)
+    int16_t left_stick_y;          // Left stick Y position (-32768 to 32767)
+    int16_t right_stick_x;         // Right stick X position (-32768 to 32767)
+    int16_t right_stick_y;         // Right stick Y position (-32768 to 32767)
 } InputState;
 
 // Initialization and cleanup
@@ -49,17 +62,17 @@ void input_cleanup(InputState* input);
 void input_update(InputState* input);
 
 // Button state queries
-bool button_pressed(InputState* input, int button);   // Button just pressed this frame
-bool button_released(InputState* input, int button);  // Button just released this frame
-bool button_down(InputState* input, int button);      // Button currently held down
+bool button_pressed(InputState* input, int button);
+bool button_released(InputState* input, int button);
+bool button_down(InputState* input, int button);
+bool combo_pressed(InputState* input, int button1, int button2);
+bool combo_down(InputState* input, int button1, int button2);
 
-// Button combination checks
-bool combo_down(InputState* input, int btn1, int btn2);  // Both buttons held down
+// Joystick state queries
+float get_left_stick_x(InputState* input);
+float get_left_stick_y(InputState* input);
+float get_right_stick_x(InputState* input);
+float get_right_stick_y(InputState* input);
+float normalize_axis(int16_t axis);
 
-// Joystick access
-int16_t get_left_stick_y(InputState* input);
-int16_t get_left_stick_x(InputState* input);
-int16_t get_right_stick_y(InputState* input);
-int16_t get_right_stick_x(InputState* input);
-
-#endif // INPUT_H
+#endif
