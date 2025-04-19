@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
-#include <cJSON.h>
 
 // ===== Constants and Configuration =====
 #define SCREEN_WIDTH 640
@@ -522,74 +521,67 @@ void process_button_event(App *app, ButtonCode button, bool pressed) {
     }
 }
 
-// Load themes from directory
-bool load_theme_files(App *app) {
+int parse_color(const char *str, SDL_Color *color) {
+    // Expects "r,g,b,a"
+    return sscanf(str, "%hhu,%hhu,%hhu,%hhu", &color->r, &color->g, &color->b, &color->a) == 4;
+}
+
+int load_theme_from_file(RenderSystem *render, const char *filename) {
+    FILE *fp = fopen(filename, "r");
+    if (!fp) return 0;
+
+    ColorScheme theme = {0};
+    char line[128];
+
+    while (fgets(line, sizeof(line), fp)) {
+        char *eq = strchr(line, '=');
+        if (!eq) continue;
+        *eq = 0;
+        char *key = line;
+        char *value = eq + 1;
+        // Remove newline
+        value[strcspn(value, "\r\n")] = 0;
+
+        if (strcmp(key, "name") == 0) {
+            strncpy(theme.name, value, sizeof(theme.name)-1);
+        } else if (strcmp(key, "background") == 0) {
+            parse_color(value, &theme.background);
+        } else if (strcmp(key, "text") == 0) {
+            parse_color(value, &theme.text);
+        } else if (strcmp(key, "highlight") == 0) {
+            parse_color(value, &theme.highlight);
+        } else if (strcmp(key, "accent") == 0) {
+            parse_color(value, &theme.accent);
+        } else if (strcmp(key, "shadow") == 0) {
+            parse_color(value, &theme.shadow);
+        }
+    }
+    fclose(fp);
+
+    if (render->colorSchemeCount < MAX_COLOR_SCHEMES) {
+        render->colorSchemes[render->colorSchemeCount++] = theme;
+        return 1;
+    }
+    return 0;
+}
+
+void load_theme_files(App *app) {
     DIR *dir = opendir("themes");
     if (!dir) {
-        mkdir("themes", 0755);  // Create if doesn't exist
-        app->render.colorSchemeCount = 2;  // Use defaults
-        return false;
+        mkdir("themes", 0755);
+        app->render.colorSchemeCount = 2; // Use defaults
+        return;
     }
-
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_REG && strstr(entry->d_name, ".json")) {
+        if (entry->d_type == DT_REG && strstr(entry->d_name, ".theme")) {
             char path[256];
             snprintf(path, sizeof(path), "themes/%s", entry->d_name);
             load_theme_from_file(&app->render, path);
         }
     }
-
     closedir(dir);
-    return true;
 }
-
-// Load individual theme file
-bool load_theme_from_file(RenderSystem *render, const char *filename) {
-    FILE *fp = fopen(filename, "r");
-    if (!fp) return false;
-
-    // Read file content
-    char buffer[4096] = {0};
-    fread(buffer, 1, sizeof(buffer)-1, fp);
-    fclose(fp);
-
-    // Parse JSON
-    cJSON *json = cJSON_Parse(buffer);
-    if (!json) return false;
-
-    // Extract theme data
-    ColorScheme theme = {0};
-
-    // Get theme name
-    cJSON *name = cJSON_GetObjectItem(json, "name");
-    if (cJSON_IsString(name)) {
-        strncpy(theme.name, name->valuestring, sizeof(theme.name)-1);
-    }
-
-    // Parse colors (hex format: "#RRGGBB" or array [R,G,B,A])
-    SDL_Color parse_color(cJSON *color_obj) {
-        SDL_Color color = {255, 255, 255, 255};
-
-        if (cJSON_IsString(color_obj)) {
-            // Parse hex color (#RRGGBB)
-            const char *hex = color_obj->valuestring;
-            if (hex[0] == '#') {
-                sscanf(hex+1, "%2hhx%2hhx%2hhx", &color.r, &color.g, &color.b);
-            }
-        }
-        else if (cJSON_IsArray(color_obj)) {
-            // Parse [R,G,B,A] array
-            color.r = cJSON_GetArrayItem(color_obj, 0)->valueint;
-            color.g = cJSON_GetArrayItem(color_obj, 1)->valueint;
-            color.b = cJSON_GetArrayItem(color_obj, 2)->valueint;
-            if (cJSON_GetArraySize(color_obj) > 3) {
-                color.a = cJSON_GetArrayItem(color_obj, 3)->valueint;
-            }
-        }
-
-        return color;
-    }
 
     // Get all theme colors
     theme.background = parse_color(cJSON_GetObjectItem(json, "background"));
