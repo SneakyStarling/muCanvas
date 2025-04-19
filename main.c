@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 // ===== Constants and Configuration =====
 #define SCREEN_WIDTH 640
@@ -82,14 +83,16 @@ typedef struct {
 // Rendering system
 typedef struct {
     SDL_Renderer *renderer;
-    TTF_Font *fonts[3];       // Small, Medium, Large fonts
+    TTF_Font *fonts[3]; // Small, Medium, Large fonts
     Shape shapes[MAX_SHAPES]; // Shape buffer
-    Text texts[MAX_TEXTS];    // Text buffer
+    Text texts[MAX_TEXTS]; // Text buffer
     int shapeCount;
     int textCount;
     ColorScheme colorSchemes[MAX_COLOR_SCHEMES];
+    int colorSchemeCount;  // Add this field
     int activeColorScheme;
 } RenderSystem;
+
 
 // Main application state
 typedef struct {
@@ -127,7 +130,7 @@ int add_text(RenderSystem *render, const char *text, SDL_Point position, SDL_Col
 void update_shape(RenderSystem *render, int id, SDL_Rect rect, SDL_Color color, bool visible);
 void update_text(RenderSystem *render, int id, const char *text, SDL_Point position, SDL_Color color, bool visible);
 void render_frame(App *app);
-void render_menu(App *app);
+void render_menu(App *app, const char *title, const char **options, int optionCount, int selectedIndex);
 
 // ===== SDL Initialization and Cleanup =====
 bool initialize_sdl(App *app) {
@@ -159,6 +162,12 @@ bool initialize_sdl(App *app) {
     }
 
     return true;
+}
+
+void cleanup(App *app) {
+    cleanup_render(&app.render);
+    cleanup_input(&app.input);
+    cleanup_sdl(app);
 }
 
 void cleanup_sdl(App *app) {
@@ -288,6 +297,7 @@ bool initialize_render(RenderSystem *render, SDL_Window *window) {
 }
 
 void setup_color_schemes(RenderSystem *render) {
+    render->colorSchemeCount = 3;
     // Default dark scheme
     render->colorSchemes[0].background = (SDL_Color){0, 0, 0, 255};
     render->colorSchemes[0].text = (SDL_Color){255, 255, 255, 255};
@@ -576,27 +586,15 @@ void load_theme_files(App *app) {
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG && strstr(entry->d_name, ".theme")) {
             char path[256];
-            snprintf(path, sizeof(path), "themes/%s", entry->d_name);
-            load_theme_from_file(&app->render, path);
+            size_t prefix_len = strlen("themes/");
+            if (prefix_len + strlen(entry->d_name) < sizeof(path)) {
+                strcpy(path, "themes/");
+                strcat(path, entry->d_name);
+                load_theme_from_file(&app->render, path);
+            }
         }
     }
     closedir(dir);
-}
-
-    // Get all theme colors
-    theme.background = parse_color(cJSON_GetObjectItem(json, "background"));
-    theme.text = parse_color(cJSON_GetObjectItem(json, "text"));
-    theme.highlight = parse_color(cJSON_GetObjectItem(json, "highlight"));
-    theme.accent = parse_color(cJSON_GetObjectItem(json, "accent"));
-    theme.shadow = parse_color(cJSON_GetObjectItem(json, "shadow"));
-
-    // Add theme to collection
-    if (render->colorSchemeCount < MAX_COLOR_SCHEMES) {
-        render->colorSchemes[render->colorSchemeCount++] = theme;
-    }
-
-    cJSON_Delete(json);
-    return true;
 }
 
 // Render a menu with options
@@ -784,7 +782,7 @@ int main() {
     App app = {0};
     initialize_sdl(&app);
     initialize_input(&app.input);
-    initialize_render(&app.render);
+    initialize_render(&app.render, app.window);
 
     // Load theme files from themes directory
     load_theme_files(&app);
