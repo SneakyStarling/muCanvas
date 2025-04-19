@@ -3,9 +3,6 @@
 #include <stdbool.h>
 
 int main() {
-    // Force software rendering to avoid Mali GPU issues
-    putenv("SDL_VIDEODRIVER=software");
-
     // Initialize SDL with video and gamecontroller subsystems
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
         fprintf(stderr, "SDL_Init error: %s\n", SDL_GetError());
