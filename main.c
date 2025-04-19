@@ -9,6 +9,16 @@
 #include <dirent.h>
 #include <cJSON.h>
 
+// ===== Constants and Configuration =====
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
+#define INPUT_DEVICE "/dev/input/event1"
+#define FONT_PATH "fonts/DejaVuSans.ttf"
+#define MAX_SHAPES 20
+#define MAX_TEXTS 20
+#define MAX_BUTTONS 32
+#define MAX_COLOR_SCHEMES 5
+
 // Button code definitions
 typedef enum {
     BUTTON_A = 304,
