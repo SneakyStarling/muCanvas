@@ -165,8 +165,8 @@ bool initialize_sdl(App *app) {
 }
 
 void cleanup(App *app) {
-    cleanup_render(&app.render);
-    cleanup_input(&app.input);
+    cleanup_render(&app->render);  // Changed from &app.render
+    cleanup_input(&app->input);    // Changed from &app.input
     cleanup_sdl(app);
 }
 
@@ -474,9 +474,6 @@ void render_frame(App *app) {
 
         SDL_RenderCopy(render->renderer, text->texture, NULL, &text->rect);
     }
-
-    // Render demo menu
-    render_menu(app);
 
     // Update screen
     SDL_RenderPresent(render->renderer);
