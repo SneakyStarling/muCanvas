@@ -1,131 +1,106 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <linux/input.h>
 #include <stdbool.h>
 
-int main() {
-    // Initialize SDL with video and gamecontroller subsystems
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
-        fprintf(stderr, "SDL_Init error: %s\n", SDL_GetError());
-        return 1;
+#define B_BUTTON_CODE 305
+
+// Structure for event handling
+struct input_state {
+    int current_code;
+    char current_code_name[32];
+    int current_value;
+};
+
+// Function to check for input events
+bool check_input(const char* device_path, struct input_state* state) {
+    int fd = open(device_path, O_RDONLY | O_NONBLOCK);
+    if (fd == -1) {
+        fprintf(stderr, "Could not open input device: %s\n", device_path);
+        return false;
     }
 
-    // Initialize TTF
-    if (TTF_Init() < 0) {
-        fprintf(stderr, "TTF_Init error: %s\n", TTF_GetError());
-        SDL_Quit();
-        return 1;
-    }
+    struct input_event event;
+    ssize_t bytes = read(fd, &event, sizeof(event));
 
-    // Create window
-    SDL_Window *window = SDL_CreateWindow("SDL2 Text",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        640, 480, SDL_WINDOW_FULLSCREEN);
-    if (!window) {
-        fprintf(stderr, "Window creation error: %s\n", SDL_GetError());
-        TTF_Quit();
-        SDL_Quit();
-        return 1;
-    }
-
-    // Create renderer (software for Mali GPU compatibility)
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
-    if (!renderer) {
-        fprintf(stderr, "Renderer creation error: %s\n", SDL_GetError());
-        SDL_DestroyWindow(window);
-        TTF_Quit();
-        SDL_Quit();
-        return 1;
-    }
-
-    // Load font
-    TTF_Font *font = TTF_OpenFont("DejaVuSans.ttf", 24);
-    if (!font) {
-        fprintf(stderr, "Font loading error: %s\n", TTF_GetError());
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        TTF_Quit();
-        SDL_Quit();
-        return 1;
-    }
-
-    // Open first available gamepad/controller
-    SDL_GameController *controller = NULL;
-    for (int i = 0; i < SDL_NumJoysticks(); i++) {
-        if (SDL_IsGameController(i)) {
-            controller = SDL_GameControllerOpen(i);
-            if (controller) {
-                printf("Found gamepad: %s\n", SDL_GameControllerName(controller));
-                break;
-            }
+    if (bytes > 0 && event.type == EV_KEY) {
+        if (event.value != 0) {  // Button pressed or held
+            state->current_code = event.code;
+            state->current_value = (event.value != 1) ? -1 : event.value;
+            printf("Key pressed: %d, value: %d\n", state->current_code, state->current_value);
+            close(fd);
+            return true;
         }
     }
 
-    // Create text surface and texture
+    close(fd);
+    return false;
+}
+
+// Function to check if a specific button is pressed
+bool key_pressed(struct input_state* state, int key_code) {
+    return state->current_code == key_code;
+}
+
+int main() {
+    SDL_Init(SDL_INIT_VIDEO);
+    TTF_Init();
+
+    SDL_Window *window = SDL_CreateWindow("SDL2 Text",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        640, 480, SDL_WINDOW_FULLSCREEN);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);  // No flags, use default
+
+    TTF_Font *font = TTF_OpenFont("DejaVuSans.ttf", 24);
     SDL_Color color = {255, 255, 255, 255};
     SDL_Surface *text_surface = TTF_RenderText_Solid(font,
         "Hello world! Press B button to exit", color);
-    if (!text_surface) {
-        fprintf(stderr, "Text surface error: %s\n", TTF_GetError());
-        if (controller) SDL_GameControllerClose(controller);
-        TTF_CloseFont(font);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        TTF_Quit();
-        SDL_Quit();
-        return 1;
-    }
-
     SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+
     SDL_Rect dstrect = {50, 50, text_surface->w, text_surface->h};
     SDL_FreeSurface(text_surface);
 
     // Main loop
+    struct input_state state = {0};
     bool running = true;
-    SDL_Event event;
 
     while (running) {
-        // Event handling
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_QUIT:
-                    running = false;
-                    break;
-
-                case SDL_KEYDOWN:
-                    // Also respond to ESC key for desktop testing
-                    if (event.key.keysym.sym == SDLK_ESCAPE)
-                        running = false;
-                    break;
-
-                case SDL_CONTROLLERBUTTONDOWN:
-                    // Check for B button press (matches button 305 in Python example)
-                    if (event.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
-                        printf("B button pressed - exiting\n");
-                        running = false;
-                    }
-                    printf("Controller button pressed: %d\n", event.cbutton.button);
-                    break;
-            }
-        }
-
-        // Render
+        // Clear screen
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
+
+        // Render text
         SDL_RenderCopy(renderer, text_texture, NULL, &dstrect);
         SDL_RenderPresent(renderer);
 
+        // Process SDL events for window management
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = false;
+            }
+        }
+
+        // Check direct input
+        if (check_input("/dev/input/event1", &state)) {
+            if (key_pressed(&state, B_BUTTON_CODE)) {
+                printf("B button pressed - exiting\n");
+                running = false;
+            }
+        }
+
         // Small delay to prevent CPU hogging
-        SDL_Delay(16); // ~60 fps
+        SDL_Delay(16);
     }
 
-    // Cleanup
     SDL_DestroyTexture(text_texture);
-    if (controller) SDL_GameControllerClose(controller);
     TTF_CloseFont(font);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     TTF_Quit();
     SDL_Quit();
-
     return 0;
 }
