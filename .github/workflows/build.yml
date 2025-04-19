@@ -20,7 +20,7 @@ jobs:
 
       - name: Build
         run: |
-          gcc main.c -o app $(pkg-config --cflags --libs sdl2 SDL2_ttf)
+          gcc main.c input.c render.c -o app $(pkg-config --cflags --libs sdl2 SDL2_ttf)
 
       - name: Upload ARM binary
         uses: actions/upload-artifact@v4
