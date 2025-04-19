@@ -81,6 +81,27 @@ int main() {
         // Draw text
         SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
 
+        // Move red square with D-pad
+        int move_speed = 5;
+        if (button_down(&input, BUTTON_DPAD_LEFT)) {
+            center_square.x -= move_speed;
+        }
+        if (button_down(&input, BUTTON_DPAD_RIGHT)) {
+            center_square.x += move_speed;
+        }
+        if (button_down(&input, BUTTON_DPAD_UP)) {
+            center_square.y -= move_speed;
+        }
+        if (button_down(&input, BUTTON_DPAD_DOWN)) {
+            center_square.y += move_speed;
+        }
+
+        // Keep square within screen bounds
+        if (center_square.x < 0) center_square.x = 0;
+        if (center_square.y < 0) center_square.y = 0;
+        if (center_square.x > 640 - SQUARE_SIZE) center_square.x = 640 - SQUARE_SIZE;
+        if (center_square.y > 480 - SQUARE_SIZE) center_square.y = 480 - SQUARE_SIZE;
+
         // Get normalized joystick values (-1.0 to 1.0)
         float left_x = get_left_stick_x(&input);
         float left_y = get_left_stick_y(&input);
@@ -90,12 +111,12 @@ int main() {
         // Use joystick values to move things
         if (fabs(left_x) > 0.0f) {
             // Move horizontally based on left stick X
-            red_square.x += (int)(left_x * 5.0f);
+            center_square.x += (int)(left_x * 5.0f);
         }
 
         if (fabs(left_y) > 0.0f) {
             // Move vertically based on left stick Y
-            red_square.y -= (int)(left_y * 5.0f);  // Invert Y for natural movement
+            center_square.y -= (int)(left_y * 5.0f);  // Invert Y for natural movement
         }
 
         // Draw center square when A is pressed
