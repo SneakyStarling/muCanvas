@@ -83,7 +83,7 @@ int main() {
         SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
 
         // Draw center square when A is pressed
-        if (a_button_pressed && !l1_l2_combo_pressed) {
+        if (a_button_pressed) {
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);  // Red square
             SDL_RenderFillRect(renderer, &center_square);
         }
