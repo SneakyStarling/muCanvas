@@ -22,7 +22,7 @@ int main() {
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 
     // Load font and create text
-    TTF_Font *font = TTF_OpenFont("fonts/DejaVuSans.ttf", 24);
+    TTF_Font *font = TTF_OpenFont("./fonts/DejaVuSans.ttf", 24);
     SDL_Color color = {255, 255, 255, 255};
     SDL_Surface *text_surface = TTF_RenderText_Solid(font,
         "Press A to show square, B to exit", color);
