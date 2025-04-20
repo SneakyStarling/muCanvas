@@ -44,8 +44,6 @@ typedef struct {
     bool current[MAX_BUTTONS];     // Current button states
     bool previous[MAX_BUTTONS];    // Previous button states
 
-    // Joystick state
-    SDL_Joystick *joystick;        // SDL Joystick handle
     int16_t left_stick_x;          // Left stick X position (-32768 to 32767)
     int16_t left_stick_y;          // Left stick Y position (-32768 to 32767)
     int16_t right_stick_x;         // Right stick X position (-32768 to 32767)

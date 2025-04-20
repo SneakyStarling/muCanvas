@@ -33,10 +33,10 @@ void input_cleanup(InputState* input) {
 
 float normalize_axis(int16_t axis) {
     // Convert to -1.0~1.0 float
-    float normalized = (float)axis / 32768.0f;
+    float normalized = (float)axis / 4096.0f;
 
     // Apply deadzone (adjust percentage as needed)
-    if (fabs(normalized) < 0.15f) {
+    if (fabs(normalized) < 0.05f) {
         return 0.0f;
     }
 
