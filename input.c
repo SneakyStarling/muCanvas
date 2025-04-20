@@ -166,17 +166,21 @@ bool combo_pressed(InputState* input, int button1, int button2) {
 }
 
 float get_left_stick_x(InputState* input) {
+    if (!input) return 0.0f;
     return normalize_axis(input->left_stick_x);
 }
 
 float get_left_stick_y(InputState* input) {
+    if (!input) return 0.0f;
     return normalize_axis(input->left_stick_y);
 }
 
 float get_right_stick_x(InputState* input) {
+    if (!input) return 0.0f;
     return normalize_axis(input->right_stick_x);
 }
 
 float get_right_stick_y(InputState* input) {
+    if (!input) return 0.0f;
     return normalize_axis(input->right_stick_y);
 }

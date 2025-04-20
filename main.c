@@ -132,18 +132,6 @@ int main() {
             SDL_RenderFillRect(renderer, &right_square);
         }
 
-        float lx = get_left_stick_x(&input);
-        float ly = get_left_stick_y(&input);
-        float rx = get_right_stick_x(&input);
-        float ry = get_right_stick_y(&input);
-
-        char buf[64];
-        snprintf(buf, sizeof(buf), "Left Stick: X=%.2f, Y=%.2f", lx, ly);
-        draw_text(renderer, font, 10, 320, buf);
-
-        snprintf(buf, sizeof(buf), "Left Stick: X=%.2f, Y=%.2f", rx, ry);
-        draw_text(renderer, font, 10, 360, buf);
-
         // Update screen
         SDL_RenderPresent(renderer);
 
