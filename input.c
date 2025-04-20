@@ -6,38 +6,14 @@
 #include <sys/select.h>
 
 bool input_init(InputState* input) {
-    // Initialize joystick subsystem
-    SDL_InitSubSystem(SDL_INIT_JOYSTICK);
-
-    // Set up evdev input
     input->fd = open("/dev/input/event1", O_RDONLY | O_NONBLOCK);
     if (input->fd < 0) {
         perror("Failed to open input device");
+        return false;
     }
 
-    // Initialize button states
     memset(input->current, 0, sizeof(input->current));
     memset(input->previous, 0, sizeof(input->previous));
-
-    // Initialize joystick
-    input->joystick = NULL;
-    if (SDL_NumJoysticks() > 0) {
-        input->joystick = SDL_JoystickOpen(0);
-        if (input->joystick) {
-            printf("Joystick detected: %s\n", SDL_JoystickName(input->joystick));
-            printf("Number of axes: %d\n", SDL_JoystickNumAxes(input->joystick));
-            printf("Number of buttons: %d\n", SDL_JoystickNumButtons(input->joystick));
-        } else {
-            printf("Failed to open joystick: %s\n", SDL_GetError());
-        }
-    }
-
-    // Initialize joystick values
-    input->left_stick_x = 0;
-    input->left_stick_y = 0;
-    input->right_stick_x = 0;
-    input->right_stick_y = 0;
-
     return true;
 }
 
@@ -54,8 +30,8 @@ void input_cleanup(InputState* input) {
 }
 
 float normalize_axis(int16_t axis) {
-    // Convert from -4096~4096 range to -1.0~1.0 float
-    float normalized = (float)axis / 4096.0f;
+    // Convert to -1.0~1.0 float
+    float normalized = (float)axis / 32768.0f;
 
     // Apply deadzone (adjust percentage as needed)
     if (fabs(normalized) < 0.15f) {
@@ -69,15 +45,6 @@ void input_update(InputState* input) {
     // Store previous state
     memcpy(input->previous, input->current, sizeof(input->previous));
 
-    // Update joystick state if using SDL joystick
-    if (input->joystick) {
-        SDL_JoystickUpdate();
-
-        // Read analog sticks
-        input->left_stick_x = SDL_JoystickGetAxis(input->joystick, AXIS_Z);
-        input->left_stick_y = SDL_JoystickGetAxis(input->joystick, AXIS_Y);
-        input->right_stick_x = SDL_JoystickGetAxis(input->joystick, AXIS_RZ);
-        input->right_stick_y = SDL_JoystickGetAxis(input->joystick, AXIS_RY);
     }
 
     // Read from evdev input device
