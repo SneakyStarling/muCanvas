@@ -28,14 +28,40 @@ void draw_clear(RenderContext* ctx) {
 }
 
 void draw_text(RenderContext* ctx, const char* text, int x, int y) {
+    // Check for NULL pointers
+    if (!ctx || !ctx->renderer || !ctx->font || !text) {
+        fprintf(stderr, "draw_text: NULL parameter detected\n");
+        return;
+    }
+
     SDL_Color color = {255, 255, 255, 255};
     SDL_Surface* surface = TTF_RenderText_Solid(ctx->font, text, color);
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx->renderer, surface);
 
-    SDL_Rect rect = {x, y, surface->w, surface->h};
+    // Check if surface creation succeeded
+    if (!surface) {
+        fprintf(stderr, "draw_text: Failed to render text '%s': %s\n",
+                text, TTF_GetError());
+        return;
+    }
+
+    // Store width and height before converting to texture
+    int width = surface->w;
+    int height = surface->h;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(ctx->renderer, surface);
+    SDL_FreeSurface(surface);  // Free the surface as soon as we're done with it
+
+    // Check if texture creation succeeded
+    if (!texture) {
+        fprintf(stderr, "draw_text: Failed to create texture: %s\n",
+                SDL_GetError());
+        return;
+    }
+
+    // Use the stored width and height
+    SDL_Rect rect = {x, y, width, height};
     SDL_RenderCopy(ctx->renderer, texture, NULL, &rect);
 
-    SDL_FreeSurface(surface);
     SDL_DestroyTexture(texture);
 }
 
