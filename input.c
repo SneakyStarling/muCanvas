@@ -54,12 +54,14 @@ void input_cleanup(InputState* input) {
 }
 
 float normalize_axis(int16_t axis) {
-    // Convert axis value to float in range [-1.0, 1.0]
-    // Apply deadzone
-    float normalized = (float)axis / 32767.0f;
-    if (fabs(normalized) < (float)JOYSTICK_DEADZONE / 32767.0f) {
+    // Convert from -4096~4096 range to -1.0~1.0 float
+    float normalized = (float)axis / 4096.0f;
+
+    // Apply deadzone (adjust percentage as needed)
+    if (fabs(normalized) < 0.15f) {
         return 0.0f;
     }
+
     return normalized;
 }
 
