@@ -14,8 +14,6 @@
 #define BUTTON_R1       309
 #define BUTTON_L2       314
 #define BUTTON_R2       315
-#define BUTTON_DY       17
-#define BUTTON_DX       16
 #define BUTTON_SELECT   310
 #define BUTTON_START    311
 #define BUTTON_MENU     312
@@ -28,13 +26,14 @@
 #define BUTTON_DPAD_UP    1003
 #define BUTTON_DPAD_DOWN  1004
 
-// Axis codes
+// Axis codes from evtest
 #define AXIS_Y       1  // Left stick Y (ABS_Y)
 #define AXIS_Z       5  // Left stick X (ABS_Z)
 #define AXIS_RY      4  // Right stick Y (ABS_RY)
 #define AXIS_RZ      2  // Right stick Z (ABS_RZ)
-#define AXIS_DPAD_X  9999 // D-pad X axis (ABS_HAT0X) fixme: find right code with evtest /dev/input/event1
-#define AXIS_DPAD_Y  9999 // D-pad Y axis (ABS_HAT0Y) fixme: find right code with evtest /dev/input/event1
+#define AXIS_DPAD_X  16
+#define AXIS_DPAD_Y  17
+// todo joystick press find with: evtest /dev/input/event1
 
 // Constants
 #define MAX_BUTTONS 2000
