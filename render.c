@@ -4,6 +4,7 @@
 void render_init(RenderContext* ctx) {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
+    IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG); // Init SDL_image
 
     ctx->window_width = 640;
     ctx->window_height = 480;
@@ -56,6 +57,22 @@ void draw_square(RenderContext* ctx, int x, int y, int size) {
     SDL_Rect rect = {x, y, size, size};
     SDL_SetRenderDrawColor(ctx->renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(ctx->renderer, &rect);
+}
+
+SDL_Texture* load_image(RenderContext* ctx, const char* path) {
+    SDL_Texture* texture = IMG_LoadTexture(ctx->renderer, path);
+    if (!texture) {
+        fprintf(stderr, "Failed to load image %s: %s\n", path, IMG_GetError());
+    }
+    return texture;
+}
+
+void draw_image(RenderContext* ctx, SDL_Texture* texture, int x, int y) {
+    if (!texture) return;
+    int w, h;
+    SDL_QueryTexture(texture, NULL, NULL, &w, &h);
+    SDL_Rect dest = {x, y, w, h};
+    SDL_RenderCopy(ctx->renderer, texture, NULL, &dest);
 }
 
 void render_present(RenderContext* ctx) {

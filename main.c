@@ -20,6 +20,8 @@ int main() {
     int square_x = 640 / 2;
     int square_y = 480 / 2;
 
+     SDL_Texture* img = load_image(&ctx, "image.png");
+
     bool running = true;
     while (running) {
         // Handle SDL events
@@ -59,6 +61,8 @@ int main() {
 
         draw_text(&ctx, "A: red square | L1+L2: green squares | D-pad/Stick: move square", 50, 50);
 
+        draw_image(&ctx, img, 100, 100);
+
         // Draw the red square if A is held
         if (button_down(&input, BUTTON_A)) {
             draw_square(&ctx, square_x, square_y, SQUARE_SIZE);
@@ -88,6 +92,7 @@ int main() {
         SDL_Delay(16);
     }
 
+    SDL_DestroyTexture(img);
     input_cleanup(&input);
     render_cleanup(&ctx);
     return 0;
