@@ -14,6 +14,13 @@ bool input_init(InputState* input) {
 
     memset(input->current, 0, sizeof(input->current));
     memset(input->previous, 0, sizeof(input->previous));
+
+    // Initialize joystick values to center
+    input->left_stick_x = 0;
+    input->left_stick_y = 0;
+    input->right_stick_x = 0;
+    input->right_stick_y = 0;
+
     return true;
 }
 
@@ -46,10 +53,13 @@ void input_update(InputState* input) {
         fd_set readfds;
         struct timeval tv = {0, 0}; // Non-blocking
 
-        FD_ZERO(&readfds);
-        FD_SET(input->fd, &readfds);
+        while (1) {
+            FD_ZERO(&readfds);
+            FD_SET(input->fd, &readfds);
 
-        while (select(input->fd + 1, &readfds, NULL, NULL, &tv) > 0) {
+            int ret = select(input->fd + 1, &readfds, NULL, NULL, &tv);
+            if (ret <= 0) break; // No more events
+
             ssize_t bytes = read(input->fd, &ev, sizeof(ev));
             if (bytes != sizeof(ev)) break;
 
