@@ -6,7 +6,6 @@
 #include <string.h>
 #include <SDL2/SDL.h>
 
-// Button codes from your evtest output
 #define BUTTON_A        304
 #define BUTTON_B        305
 #define BUTTON_Y        306
@@ -29,13 +28,13 @@
 #define BUTTON_DPAD_UP    1003
 #define BUTTON_DPAD_DOWN  1004
 
-// Axis codes from evtest
+// Axis codes
 #define AXIS_Y       1  // Left stick Y (ABS_Y)
-#define AXIS_Z       2  // Left stick X (ABS_Z)
+#define AXIS_Z       5  // Left stick X (ABS_Z)
 #define AXIS_RY      4  // Right stick Y (ABS_RY)
-#define AXIS_RZ      5  // Right stick Z (ABS_RZ)
-#define AXIS_DPAD_X  16 // D-pad X axis (ABS_HAT0X)
-#define AXIS_DPAD_Y  17 // D-pad Y axis (ABS_HAT0Y)
+#define AXIS_RZ      2  // Right stick Z (ABS_RZ)
+#define AXIS_DPAD_X  9999 // D-pad X axis (ABS_HAT0X) fixme: find right code with evtest /dev/input/event1
+#define AXIS_DPAD_Y  9999 // D-pad Y axis (ABS_HAT0Y) fixme: find right code with evtest /dev/input/event1
 
 // Constants
 #define MAX_BUTTONS 2000

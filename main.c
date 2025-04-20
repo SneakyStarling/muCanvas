@@ -21,7 +21,7 @@ int main() {
     TTF_Font *font = TTF_OpenFont("./fonts/DejaVuSans.ttf", 24);
     SDL_Color color = {255, 255, 255, 255};
     SDL_Surface *text_surface = TTF_RenderText_Solid(font,
-        "A: show center square | L1+L2: show side squares | B: exit", color);
+        "A: show center square | \nL1+L2: show side squares | B: exit", color);
     SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
     SDL_Rect text_rect = {50, 50, text_surface->w, text_surface->h};
     SDL_FreeSurface(text_surface);
