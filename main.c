@@ -132,6 +132,19 @@ int main() {
             SDL_RenderFillRect(renderer, &right_square);
         }
 
+        char buf[64];
+        snprintf(buf, sizeof(buf), "Left Stick X: %.2f", get_left_stick_x(&input));
+        draw_text(renderer, font, 10, 120, buf);
+
+        snprintf(buf, sizeof(buf), "Left Stick Y: %.2f", get_left_stick_y(&input));
+        draw_text(renderer, font, 10, 150, buf);
+
+        snprintf(buf, sizeof(buf), "Right Stick X: %.2f", get_right_stick_x(&input));
+        draw_text(renderer, font, 10, 180, buf);
+
+        snprintf(buf, sizeof(buf), "Right Stick Y: %.2f", get_right_stick_y(&input));
+        draw_text(renderer, font, 10, 210, buf);
+
         // Update screen
         SDL_RenderPresent(renderer);
 
