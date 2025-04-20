@@ -26,6 +26,11 @@ int main() {
     SDL_Rect text_rect = {50, 50, text_surface->w, text_surface->h};
     SDL_FreeSurface(text_surface);
 
+    RenderContext ctx;
+    ctx.renderer = renderer;
+    ctx.font = font;
+    ctx.window = window;
+
     // Initialize input
     InputState input;
     if (!input_init(&input)) {
@@ -139,10 +144,10 @@ int main() {
 
         char buf[64];
         snprintf(buf, sizeof(buf), "Left Stick: X=%.2f, Y=%.2f", lx, ly);
-        draw_text(renderer, font, 10, 320, buf);
+        draw_text(ctx, buf, 10, 320);
 
         snprintf(buf, sizeof(buf), "Right Stick: X=%.2f, Y=%.2f", rx, ry);
-        draw_text(renderer, font, 10, 360, buf);
+        draw_text(ctx, buf, 10, 360);
 
         // Update screen
         SDL_RenderPresent(renderer);
