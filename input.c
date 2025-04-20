@@ -22,11 +22,6 @@ void input_cleanup(InputState* input) {
         close(input->fd);
         input->fd = -1;
     }
-
-    if (input->joystick) {
-        SDL_JoystickClose(input->joystick);
-        input->joystick = NULL;
-    }
 }
 
 float normalize_axis(int16_t axis) {
@@ -44,8 +39,6 @@ float normalize_axis(int16_t axis) {
 void input_update(InputState* input) {
     // Store previous state
     memcpy(input->previous, input->current, sizeof(input->previous));
-
-    }
 
     // Read from evdev input device
     if (input->fd >= 0) {
