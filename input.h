@@ -27,10 +27,10 @@
 #define BUTTON_DPAD_DOWN  1004
 
 // Axis codes from evtest
-#define AXIS_Y       1  // Left stick Y (ABS_Y)
-#define AXIS_Z       2  // Left stick X (ABS_Z)
-#define AXIS_RY      4  // Right stick Y (ABS_RY)
-#define AXIS_RZ      5  // Right stick Z (ABS_RZ)
+#define AXIS_Y       2  // Left stick Y (ABS_Y)
+#define AXIS_Z       1  // Left stick X (ABS_Z)
+#define AXIS_RY      5  // Right stick Y (ABS_RY)
+#define AXIS_RZ      4  // Right stick Z (ABS_RZ)
 #define AXIS_DPAD_X  16
 #define AXIS_DPAD_Y  17
 // todo joystick press find with: evtest /dev/input/event1
