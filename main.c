@@ -116,7 +116,7 @@ int main() {
 
         if (fabs(left_y) > 0.0f) {
             // Move vertically based on left stick Y
-            center_square.y -= (int)(left_y * 5.0f);  // Invert Y for natural movement
+            center_square.y += (int)(left_y * 5.0f);
         }
 
         // Draw center square when A is pressed
