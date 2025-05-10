@@ -21,13 +21,16 @@ jobs:
           image: debian:bookworm
           options: --platform linux/arm64
           run: |
-            apt-get update -y && \
-            apt-get install -y libopenal1 && \
-            mkdir -p /github/workspace/openal-artifact && \
+            apt-get update -y
+            apt-get install -y libopenal1
+            mkdir -p /github/workspace/openal-artifact
             cp /usr/lib/aarch64-linux-gnu/libopenal.so.1 /github/workspace/openal-artifact/
+            ls -l /github/workspace/openal-artifact/  # Verify file exists
 
       - name: Upload OpenAL artifact
         uses: actions/upload-artifact@v4
         with:
           name: openal-aarch64
           path: openal-artifact/libopenal.so.1
+          if-no-files-found: error
+          include-hidden-files: true  # Optional, but safe to include
