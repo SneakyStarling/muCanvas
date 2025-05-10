@@ -1,11 +1,11 @@
 name: Extract OpenAL for aarch64
 
 on:
-  workflow_dispatch:  # Allows manual triggering from GitHub UI
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # GitHub's x86_64 runner
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,17 +19,14 @@ jobs:
         uses: docker://debian:bookworm
         with:
           args: |
-            # Install OpenAL for aarch64
             dpkg --add-architecture arm64
             apt-get update -y
             apt-get install -y libopenal1:arm64
-
-            # Copy library to workspace
             mkdir -p /github/workspace/openal-artifact
             cp /usr/lib/aarch64-linux-gnu/libopenal.so.1 /github/workspace/openal-artifact/
 
       - name: Upload OpenAL artifact
-        uses: actions/upload-artifact@v4  # Updated to v4
+        uses: actions/upload-artifact@v4
         with:
           name: openal-aarch64
           path: openal-artifact/libopenal.so.1
