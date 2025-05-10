@@ -1,18 +1,41 @@
+name: Build OpenAL for aarch64
+
+on:
+  workflow_dispatch:  # Allow manual triggering
+
 jobs:
   build:
-    runs-on: ubuntu-latest
-    container: debian:bookworm
+    name: Extract OpenAL for aarch64
+    runs-on: ubuntu-latest  # GitHub's x86_64 runner
     steps:
-      - name: Install OpenAL
-        run: |
-          apt-get update && apt-get install -y libopenal1
-      
-      - name: Extract Library
-        run: |
-          cp /usr/lib/aarch64-linux-gnu/libopenal.so.1 $GITHUB_WORKSPACE/
-      
-      - name: Upload Artifact
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU for aarch64 emulation
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64  # Emulate aarch64
+
+      - name: Create Debian Bookworm container
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}  # Optional if using public image
+
+      - name: Run in Debian Bookworm container
+        uses: docker://debian:bookworm
+        with:
+          args: |
+            # Install OpenAL for aarch64
+            dpkg --add-architecture arm64
+            apt-get update -y
+            apt-get install -y libopenal1:arm64
+
+            # Copy the library to the workspace
+            mkdir -p /github/workspace/openal-artifact
+            cp /usr/lib/aarch64-linux-gnu/libopenal.so.1 /github/workspace/openal-artifact/
+
+      - name: Upload OpenAL artifact
         uses: actions/upload-artifact@v3
         with:
-          name: openal-library
-          path: $GITHUB_WORKSPACE/libopenal.so.1
+          name: openal-aarch64
+          path: openal-artifact/libopenal.so.1
