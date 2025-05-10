@@ -19,9 +19,8 @@ jobs:
         uses: docker://debian:bookworm
         with:
           args: |
-            dpkg --add-architecture arm64
             apt-get update -y
-            apt-get install -y libopenal1:arm64
+            apt-get install -y libopenal1  # No need for :arm64
             mkdir -p /github/workspace/openal-artifact
             cp /usr/lib/aarch64-linux-gnu/libopenal.so.1 /github/workspace/openal-artifact/
 
