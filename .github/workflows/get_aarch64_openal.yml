@@ -29,7 +29,7 @@ jobs:
             cp /usr/lib/aarch64-linux-gnu/libopenal.so.1 /github/workspace/openal-artifact/
 
       - name: Upload OpenAL artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # Updated to v4
         with:
           name: openal-aarch64
           path: openal-artifact/libopenal.so.1
